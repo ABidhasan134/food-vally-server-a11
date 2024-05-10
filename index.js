@@ -36,7 +36,11 @@ async function run() {
     const foodCollection = database.collection("food");
     
     // all data get api start
-    
+    app.get('/availablefood',async(req,res)=>{
+      const cursor=foodCollection.find();
+      const result= await cursor.toArray();
+      res.send(result);
+  })
     // all data get api end
 
     await client.db("admin").command({ ping: 1 });
