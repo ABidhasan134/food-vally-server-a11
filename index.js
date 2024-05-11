@@ -50,6 +50,14 @@ async function run() {
       res.send(result);
       // console.log(result);
     })
+    // available data get request for (available page)
+      app.get("/availablefood",async(req,res)=>{
+        const status=req.query.status;
+        const query={status:status}
+        const result= await foodCollection.find(query).toArray();
+        // console.log(result);
+        res.send(result)
+      })
     // all data get api end
     // post requst in same data base and same collection
     app.post("/addData",async(req,res)=>{
