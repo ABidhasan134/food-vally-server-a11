@@ -17,7 +17,7 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.send("Resturent is high in the Rocket");
 });
-console.log(process.env.DB_USER,process.env.DB_PASSWORD)
+// console.log(process.env.DB_USER,process.env.DB_PASSWORD)
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.il352b3.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -41,6 +41,15 @@ async function run() {
       const result= await cursor.toArray();
       res.send(result);
   })
+
+    app.get('/foodsingledetails/:id',async(req,res)=>{
+      const id=req.params.id;
+      // console.log(id);
+      const query=await {_id: new ObjectId(id)}
+      const result= await foodCollection.findOne(query)
+      res.send(result);
+      // console.log(result);
+    })
     // all data get api end
 
     await client.db("admin").command({ ping: 1 });
