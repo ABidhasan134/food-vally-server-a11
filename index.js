@@ -35,13 +35,13 @@ async function run() {
     const database = client.db("foodvally");
     const foodCollection = database.collection("food");
     
-    // all data get api start
-    app.get('/availablefood',async(req,res)=>{
+    // all data get api start for Home page (all data)
+    app.get('/homefood',async(req,res)=>{
       const cursor=foodCollection.find();
       const result= await cursor.toArray();
       res.send(result);
   })
-
+// food details get request for home page(single data)
     app.get('/foodsingledetails/:id',async(req,res)=>{
       const id=req.params.id;
       // console.log(id);
@@ -51,6 +51,13 @@ async function run() {
       // console.log(result);
     })
     // all data get api end
+    // post requst in same data base and same collection
+    app.post("/addData",async(req,res)=>{
+      const info=req.body;
+      const result= await foodCollection.insertOne(info)
+      // console.log(info)
+      res.send(result);
+    })
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
