@@ -111,12 +111,28 @@ async function run() {
     });
     app.get("/managefood",async(req,res)=>{
       const email=req.query.email;
-      console.log(email);
+      // console.log(email);
       const query = {"Donator_Info.email" : email };
 
       const result = await foodCollection.find(query).toArray();
       res.send(result);
 
+    })
+    // delet from all food collection
+    app.delete("/managefood/:id", async (req, res) => {
+      const id=req.params.id;
+      // console.log(id);
+      const query={_id:new ObjectId(id)}
+      const result=await foodCollection.deleteOne(query);
+      res.send(result);
+    })
+    // get for updating of all food collection 
+    app.get("/updateall/:id",async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const query = await { _id: new ObjectId(id) };
+      const result = await foodCollection.findOne(query);
+      res.send(result);
     })
     // post requst in same data base and same collection
     app.post("/addData", async (req, res) => {
