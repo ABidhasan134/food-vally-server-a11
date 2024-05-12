@@ -58,6 +58,17 @@ async function run() {
         // console.log(result);
         res.send(result)
       })
+// spacicfic data search get request for available search oparation 
+      app.get("/searchfood",async(req,res)=>{
+        const searchQuery = req.query.Food_Name;
+        console.log(searchQuery);
+        //  allows you to perform a regular expression search. In this case, it's used to specify the pattern to match against the Food_Name field.
+        // i="case-insensitive" (meaning the search will be performed without considering the case of the letters.)
+        const query = { Food_Name: { $regex: searchQuery, $options: 'i' } };
+        const result = await foodCollection.find(query).toArray();
+        // console.log(result);
+        res.send(result);
+      })
     // all data get api end
     // post requst in same data base and same collection
     app.post("/addData",async(req,res)=>{
