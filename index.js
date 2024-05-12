@@ -86,7 +86,7 @@ async function run() {
         $set: {
           Expired_Date: updateInfo.Expired_Date,
           Food_Status: updateInfo.Food_Status,
-          Additional_Info: updateInfo.Food_AddtonalInfo,
+          Food_AddtonalInfo: updateInfo.Additional_Info,
           Food_requestDate: updateInfo.Food_requestDate,
         },
       };
@@ -134,6 +134,32 @@ async function run() {
       const result = await foodCollection.findOne(query);
       res.send(result);
     })
+    // upadate on from new one
+    app.patch("/updateall/:id", async (req, res) => {
+      const updateInfo = req.body;
+      const id = req.params.id;
+      console.log(updateInfo,id);
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          
+          Food_Name:updateInfo.Food_Name,
+          Food_Image:updateInfo.Food_Image,
+          Food_Quantity:updateInfo.Food_Quantity,
+          Pickup_Location:updateInfo.Pickup_Location,
+          Expired_Date: updateInfo.Expired_Date,
+          Expired_Date: updateInfo.Expired_Date,
+          Expired_Time: updateInfo.Expired_Time,
+          Food_requestDate: updateInfo.Food_requestDate,
+          Food_Status: updateInfo.Food_Status,
+          Food_AddtonalInfo: updateInfo.Additional_Info,
+        },
+
+      }
+      console.log(updateDoc);
+      const result = await foodCollection.updateOne(filter,updateDoc);
+      res.send(result);
+  })
     // post requst in same data base and same collection
     app.post("/addData", async (req, res) => {
       const info = req.body;
