@@ -58,7 +58,7 @@ async function run() {
       const query = { 
         Food_Status: status };
       const result = await foodCollection.find(query).toArray();
-      console.log(status);
+      // console.log(status);
       res.send(result);
     });
     // spacicfic data search get request for available search oparation
@@ -87,6 +87,7 @@ async function run() {
           Expired_Date: updateInfo.Expired_Date,
           Food_Status: updateInfo.Food_Status,
           Additional_Info: updateInfo.Food_AddtonalInfo,
+          Food_requestDate: updateInfo.Food_requestDate,
         },
       };
        // Update the document
@@ -108,6 +109,15 @@ async function run() {
       const result = await foodCollection.find(query).toArray();
       res.send(result);
     });
+    app.get("/managefood",async(req,res)=>{
+      const email=req.query.email;
+      console.log(email);
+      const query = {"Donator_Info.email" : email };
+
+      const result = await foodCollection.find(query).toArray();
+      res.send(result);
+
+    })
     // post requst in same data base and same collection
     app.post("/addData", async (req, res) => {
       const info = req.body;
