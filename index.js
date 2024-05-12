@@ -61,10 +61,11 @@ async function run() {
 // spacicfic data search get request for available search oparation 
       app.get("/searchfood",async(req,res)=>{
         const searchQuery = req.query.Food_Name;
-        console.log(searchQuery);
+        const status=req.query.status;
+        // console.log(status);
         //  allows you to perform a regular expression search. In this case, it's used to specify the pattern to match against the Food_Name field.
         // i="case-insensitive" (meaning the search will be performed without considering the case of the letters.)
-        const query = { Food_Name: { $regex: searchQuery, $options: 'i' } };
+        const query = { Food_Name: { $regex: searchQuery, $options: 'i'},status:status };
         const result = await foodCollection.find(query).toArray();
         // console.log(result);
         res.send(result);
