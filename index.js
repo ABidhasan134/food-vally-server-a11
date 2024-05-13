@@ -1,6 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
+const cookieParser = require('cookie-parser')
+const jwt=require('jsonwebtoken');
 // requireing mongodb
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
@@ -15,7 +17,7 @@ app.use(
 );
 
 app.use(express.json());
-
+app.use(cookieParser());
 app.get("/", (req, res) => {
   res.send("Resturent is high in the Rocket");
 });
@@ -30,12 +32,50 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   },
 });
+// middleware to varryfy
+const varifyToken=(req,res,next)=>{
+  const token =req?.cookies?.token;
+  if(!token){
+    res.status(401).send({massege: "unarthorize access"})
+  }
+  jwt.verify(token,process.env.ACCESS_TOKEN_SECRET,(error,decoded)=>{
+    if(error){
+      res.status(401).send({massege: "unarthorize access"})
+    }
+    // set user in req.user or decode info into req.user
+    req.user=decoded;
+    next();
+
+  })
+  console.log(token)
+}
 async function run() {
   try {
     await client.connect();
 
     const database = client.db("foodvally");
     const foodCollection = database.collection("food");
+    // jwt authentication start
+    app.post("/jwt",async(req,res)=>{
+      const user=req.body;
+      // console.log(user);
+      const token =jwt.sign(user,process.env.ACCESS_TOKEN_SECRET,{expiresIn: "1h"});
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+      }).send({ success: 'true' });
+    
+    })
+    app.post('/logoutcooke', async (req, res) => {
+      const user = req.body;
+      // console.log("logged out", user);
+      
+      // Clear the token cookie by setting its maxAge to 0
+      res.clearCookie('token',{maxAge:0}).send({ success: true });
+      // console.log("token cleared");
+  });
+    // jwt authentication end
 
     // all data get api start for Home page (all data)
     app.get("/homefood", async (req, res) => {
@@ -44,7 +84,7 @@ async function run() {
       res.send(result);
     });
     // food details get request for home page(single data)
-    app.get("/foodsingledetails/:id", async (req, res) => {
+    app.get("/foodsingledetails/:id",varifyToken, async (req, res) => {
       const id = req.params.id;
       // console.log(id);
       const query = await { _id: new ObjectId(id) };
@@ -53,7 +93,7 @@ async function run() {
       // console.log(result);
     });
     // available data get request for (available page)
-    app.get("/availablefood", async (req, res) => {
+    app.get("/availablefood",varifyToken, async (req, res) => {
       const status = req.query.status;
       const query = { 
         Food_Status: status };
@@ -62,7 +102,7 @@ async function run() {
       res.send(result);
     });
     // spacicfic data search get request for available search oparation
-    app.get("/searchfood", async (req, res) => {
+    app.get("/searchfood",varifyToken, async (req, res) => {
       const searchQuery = req.query.Food_Name;
       const status = req.query.status;
       // console.log(status);
@@ -78,7 +118,7 @@ async function run() {
     });
     // all data get api end
     // update document in mongodb
-    app.patch("/requsest/:id", async (req, res) => {
+    app.patch("/requsest/:id",varifyToken, async (req, res) => {
       const updateInfo = req.body;
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
@@ -101,7 +141,7 @@ async function run() {
       // console.log(result);
     });
     // requested food api
-    app.get("/request", async (req, res) => {
+    app.get("/request",varifyToken, async (req, res) => {
       const status = req.query.status;
       const query = { 
         Food_Status: status };
@@ -109,7 +149,7 @@ async function run() {
       const result = await foodCollection.find(query).toArray();
       res.send(result);
     });
-    app.get("/managefood",async(req,res)=>{
+    app.get("/managefood",varifyToken,async(req,res)=>{
       const email=req.query.email;
       // console.log(email);
       const query = {"Donator_Info.email" : email };
@@ -119,7 +159,7 @@ async function run() {
 
     })
     // delet from all food collection
-    app.delete("/managefood/:id", async (req, res) => {
+    app.delete("/managefood/:id",varifyToken, async (req, res) => {
       const id=req.params.id;
       // console.log(id);
       const query={_id:new ObjectId(id)}
@@ -127,7 +167,7 @@ async function run() {
       res.send(result);
     })
     // get for updating of all food collection 
-    app.get("/updateall/:id",async (req, res) => {
+    app.get("/updateall/:id",varifyToken,async (req, res) => {
       const id = req.params.id;
       console.log(id);
       const query = await { _id: new ObjectId(id) };
@@ -135,7 +175,7 @@ async function run() {
       res.send(result);
     })
     // upadate on from new one
-    app.patch("/updateall/:id", async (req, res) => {
+    app.patch("/updateall/:id",varifyToken, async (req, res) => {
       const updateInfo = req.body;
       const id = req.params.id;
       console.log(updateInfo,id);
@@ -161,12 +201,13 @@ async function run() {
       res.send(result);
   })
     // post requst in same data base and same collection
-    app.post("/addData", async (req, res) => {
+    app.post("/addData",varifyToken, async (req, res) => {
       const info = req.body;
       const result = await foodCollection.insertOne(info);
       // console.log(info)
       res.send(result);
     });
+
 
     await client.db("admin").command({ ping: 1 });
     console.log(
